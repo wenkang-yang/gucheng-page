@@ -1,14 +1,14 @@
 import type { Site, Ui, Features } from './types'
 
 export const SITE: Site = {
-  website: 'https://astro-antfustyle-theme.vercel.app/',
+  website: 'http://localhost:4321/',
   base: '/',
-  title: 'Astro AntfuStyle Theme',
+  title: '孤城',
   description:
-    'A customizable, feature-rich Astro theme for blog and portfolio creation',
-  author: 'Stephanie Lin',
-  lang: 'en',
-  ogLocale: 'en_US',
+    '你好，我是孤城，目前就读于北京大学，是一个热爱技术，对电子信息工程，计算机科学与技术，人工智能与嵌入式系统等领域感兴趣的开发者，并在这里记录项目实践，学习笔记与技术思考。',
+  author: '孤城',
+  lang: 'zh-CN',
+  ogLocale: 'zh_CN',
   imageDomains: ['cdn.bsky.app', 'images.unsplash.com'],
 }
 
