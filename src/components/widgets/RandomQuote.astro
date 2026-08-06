@@ -1,0 +1,146 @@
+---
+import { quotes } from '~/data/quotes'
+
+const firstQuote = quotes[0]
+---
+
+{
+  firstQuote && (
+    <figure
+      class="random-quote"
+      data-random-quote
+      data-quotes={JSON.stringify(quotes)}
+      aria-live="polite"
+    >
+      <blockquote>
+        <p data-quote-text>{firstQuote.text}</p>
+      </blockquote>
+      <div class="quote-meta">
+        <figcaption data-quote-source>{firstQuote.source}</figcaption>
+        <button type="button" data-quote-next aria-label="换一句">
+          换一句
+        </button>
+      </div>
+    </figure>
+  )
+}
+
+<script>
+  interface Quote {
+    text: string
+    source?: string
+  }
+
+  const storageKey = 'gucheng:last-quote'
+
+  function getNextIndex(length: number) {
+    let previous = -1
+    try {
+      previous = Number.parseInt(sessionStorage.getItem(storageKey) ?? '', 10)
+    } catch {
+      // Storage may be unavailable in privacy-restricted browsers.
+    }
+
+    const next =
+      length > 1 && Number.isInteger(previous) && previous >= 0
+        ? (previous + 1 + Math.floor(Math.random() * (length - 1))) % length
+        : Math.floor(Math.random() * length)
+
+    try {
+      sessionStorage.setItem(storageKey, String(next))
+    } catch {
+      // The quote still works without remembering the previous one.
+    }
+    return next
+  }
+
+  function showNextQuote(root: HTMLElement) {
+    const quotes = JSON.parse(root.dataset.quotes ?? '[]') as Quote[]
+    if (quotes.length === 0) return
+
+    const quote = quotes[getNextIndex(quotes.length)]
+    const text = root.querySelector<HTMLElement>('[data-quote-text]')
+    const source = root.querySelector<HTMLElement>('[data-quote-source]')
+
+    if (text) text.textContent = quote.text
+    if (source) {
+      source.textContent = quote.source ?? ''
+      source.hidden = !quote.source
+    }
+  }
+
+  function initializeQuotes() {
+    document
+      .querySelectorAll<HTMLElement>('[data-random-quote]')
+      .forEach((root) => {
+        if (root.dataset.initialized === 'true') return
+        root.dataset.initialized = 'true'
+        showNextQuote(root)
+        root
+          .querySelector('[data-quote-next]')
+          ?.addEventListener('click', () => showNextQuote(root))
+      })
+  }
+
+  initializeQuotes()
+  document.addEventListener('astro:page-load', initializeQuotes)
+</script>
+
+<style>
+  .random-quote {
+    margin: 3.5rem 0 0;
+    padding-top: 2rem;
+    border-top: 1px solid rgb(127 127 127 / 0.22);
+    font-family: var(--font-serif);
+  }
+
+  blockquote {
+    padding: 0;
+    border: 0;
+    margin: 0;
+    font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    line-height: 1.9;
+    quotes: none;
+  }
+
+  blockquote p {
+    margin: 0;
+  }
+
+  .quote-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 2rem;
+    margin-top: 0.75rem;
+    color: inherit;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    opacity: 0.52;
+  }
+
+  figcaption::before {
+    content: '—— ';
+  }
+
+  button {
+    flex: none;
+    padding: 0.2rem 0;
+    border: 0;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  button:hover,
+  button:focus-visible {
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
+</style>

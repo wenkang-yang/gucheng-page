@@ -5,11 +5,11 @@ import { SITE } from '~/config'
 import { withBasePath } from '~/utils/path'
 
 export async function GET() {
-  const blog = await getCollection('blog')
+  const writing = await getCollection('writing')
 
-  const filteredBlogitems = blog.filter((item) => !item.data.draft)
+  const filteredWritingItems = writing.filter((item) => !item.data.draft)
 
-  const sortedBlogItems = filteredBlogitems.sort(
+  const sortedWritingItems = filteredWritingItems.sort(
     (a, b) => new Date(b.data.pubDate) - new Date(a.data.pubDate)
   )
 
@@ -25,9 +25,9 @@ export async function GET() {
         <link>${SITE.website}</link>
       </image>`,
 
-    items: sortedBlogItems.map((item) => ({
+    items: sortedWritingItems.map((item) => ({
       title: `${item.data.title}`,
-      link: withBasePath(`/blog/${item.id}/`),
+      link: withBasePath(`/writing/${item.id}/`),
       pubDate: item.data.pubDate,
       description: item.data.description,
       author: SITE.author,

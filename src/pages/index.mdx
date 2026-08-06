@@ -1,7 +1,7 @@
 ---
-title: '孤城的个人网站'
-subtitle: ''
-description: ''
+title: '孤城'
+subtitle: '在技术与现实之间，记录一些个人的思考'
+description: '孤城的个人主页，收录项目经历，学习笔记，写作与阶段性的思考。'
 bgType: plum
 ogImage: true
 ---
@@ -9,6 +9,8 @@ ogImage: true
 import BaseLayout from '~/layouts/BaseLayout.astro'
 import StandardLayout from '~/layouts/StandardLayout.astro'
 import RenderPage from '~/components/views/RenderPage.astro'
+import HomeLinks from '~/components/widgets/HomeLinks.astro'
+import RandomQuote from '~/components/widgets/RandomQuote.astro'
 
 <BaseLayout
   title={frontmatter.title}
@@ -17,6 +19,10 @@ import RenderPage from '~/components/views/RenderPage.astro'
   ogImage={frontmatter.ogImage}
 >
   <StandardLayout title={frontmatter.title} subtitle={frontmatter.subtitle}>
-    <RenderPage slot="article" collectionType="home" id="index" />
+    <Fragment slot="article">
+      <RenderPage collectionType="home" id="index" />
+      <HomeLinks />
+      <RandomQuote />
+    </Fragment>
   </StandardLayout>
 </BaseLayout>

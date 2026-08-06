@@ -12,6 +12,9 @@ import { SITE } from './src/config'
 const sansFallbacks = [
   'ui-sans-serif',
   'system-ui',
+  '"PingFang SC"',
+  '"Microsoft YaHei"',
+  '"Noto Sans CJK SC"',
   '"Apple Color Emoji"',
   '"Segoe UI Emoji"',
   '"Segoe UI Symbol"',
@@ -28,6 +31,15 @@ const monoFallbacks = [
   '"Liberation Mono"',
   '"Courier New"',
   'monospace',
+]
+
+const serifFallbacks = [
+  '"Songti SC"',
+  'STSong',
+  'SimSun',
+  'ui-serif',
+  'Georgia',
+  'serif',
 ]
 
 // https://docs.astro.build/en/reference/configuration-reference/
@@ -61,6 +73,16 @@ export default defineConfig({
       subsets: ['latin'],
       formats: ['woff2'],
       fallbacks: sansFallbacks,
+    },
+    {
+      provider: fontProviders.fontsource(),
+      name: 'Noto Serif SC',
+      cssVariable: '--font-serif',
+      weights: [400, 700],
+      styles: ['normal'],
+      subsets: ['chinese-simplified', 'latin'],
+      formats: ['woff2'],
+      fallbacks: serifFallbacks,
     },
     {
       provider: fontProviders.fontsource(),

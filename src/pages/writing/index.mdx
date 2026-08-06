@@ -1,14 +1,14 @@
 ---
-title: Photos
-subtitle: 旅途、校园与日常生活里值得留下的画面
-description: 孤城的个人摄影与生活片段
+title: Writing
+description: 孤城的文章、思考与阶段性总结
+subtitle: 一些相对完整的写作与思考
 bgType: false
 ogImage: true
 ---
 
 import BaseLayout from '~/layouts/BaseLayout.astro'
 import StandardLayout from '~/layouts/StandardLayout.astro'
-import PhotosContent from '~/components/views/PhotosContent.astro'
+import ListView from '~/components/views/ListView.astro'
 
 <BaseLayout
   title={frontmatter.title}
@@ -17,10 +17,10 @@ import PhotosContent from '~/components/views/PhotosContent.astro'
   ogImage={frontmatter.ogImage}
 >
   <StandardLayout
+    class="prose"
     title={frontmatter.title}
     subtitle={frontmatter.subtitle}
-    isCentered={true}
   >
-    <PhotosContent />
+    <ListView collectionType="writing" />
   </StandardLayout>
 </BaseLayout>

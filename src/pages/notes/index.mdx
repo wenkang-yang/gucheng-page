@@ -1,14 +1,14 @@
 ---
-title: Photos
-subtitle: 旅途、校园与日常生活里值得留下的画面
-description: 孤城的个人摄影与生活片段
+title: Notes
+subtitle: 学习记录、灵感片段与尚未长成文章的想法
+description: 孤城的学习笔记与灵感片段
 bgType: false
 ogImage: true
 ---
 
 import BaseLayout from '~/layouts/BaseLayout.astro'
 import StandardLayout from '~/layouts/StandardLayout.astro'
-import PhotosContent from '~/components/views/PhotosContent.astro'
+import CardView from '~/components/views/CardView.astro'
 
 <BaseLayout
   title={frontmatter.title}
@@ -21,6 +21,6 @@ import PhotosContent from '~/components/views/PhotosContent.astro'
     subtitle={frontmatter.subtitle}
     isCentered={true}
   >
-    <PhotosContent />
+    <CardView collectionType="notes" mode="grid" pageTag={true} />
   </StandardLayout>
 </BaseLayout>

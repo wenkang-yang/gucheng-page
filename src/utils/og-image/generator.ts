@@ -1,3 +1,6 @@
+import { readFile } from 'node:fs/promises'
+import { basename, join } from 'node:path'
+
 import { experimental_getFontFileURL, fontData } from 'astro:assets'
 import { decode } from 'html-entities'
 import satori from 'satori'
@@ -44,7 +47,14 @@ function resolveSatoriFontUrl(requestUrl: URL) {
       "Unable to find a Satori-compatible WOFF source for '--font-og-sans'."
     )
 
-  return experimental_getFontFileURL(source.url, requestUrl)
+  const fontUrl = new URL(experimental_getFontFileURL(source.url, requestUrl))
+
+  // On Windows, Node may resolve localhost to ::1 while Astro's temporary
+  // build server is listening on IPv4 only.
+  if (['localhost', '[::]', '::', '0.0.0.0'].includes(fontUrl.hostname))
+    fontUrl.hostname = '127.0.0.1'
+
+  return fontUrl.href
 }
 
 /**
@@ -55,10 +65,26 @@ async function getSatoriFontData(requestUrl: URL) {
   let fontDataPromise = fontDataCache.get(fontUrl)
 
   if (!fontDataPromise) {
-    fontDataPromise = fetch(fontUrl).then(async (response) => {
-      if (!response.ok) throw new Error('Failed to fetch OG font file')
-      return response.arrayBuffer()
-    })
+    fontDataPromise = (async () => {
+      try {
+        const localFontPath = join(
+          process.cwd(),
+          'node_modules',
+          '.astro',
+          'fonts',
+          basename(new URL(fontUrl).pathname)
+        )
+        const data = await readFile(localFontPath)
+        return data.buffer.slice(
+          data.byteOffset,
+          data.byteOffset + data.byteLength
+        ) as ArrayBuffer
+      } catch {
+        const response = await fetch(fontUrl)
+        if (!response.ok) throw new Error('Failed to fetch OG font file')
+        return response.arrayBuffer()
+      }
+    })()
     fontDataCache.set(fontUrl, fontDataPromise)
   }
 

@@ -34,7 +34,9 @@ const socialIcons = socialLinks
   )
   .map((item) => (item as IconSocialItem | ResponsiveSocialItem).icon)
 
-const projectIcons = projecstData.map((item) => item.icon)
+const projectIcons = (projecstData as { icon: string }[]).map(
+  (item) => item.icon
+)
 
 const githubVersionColor: Record<string, string> = {
   major: 'bg-rose/15 text-rose-700 dark:text-rose-300',
@@ -67,6 +69,7 @@ export default defineConfig<PresetWind3Theme>({
       fontFamily: {
         ...theme.fontFamily,
         sans: 'var(--font-sans)',
+        serif: 'var(--font-serif)',
         mono: 'var(--font-mono)',
         condensed: 'var(--font-condensed)',
       },

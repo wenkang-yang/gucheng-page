@@ -1,0 +1,19 @@
+---
+import { getCollection } from 'astro:content'
+
+import EmptyState from '~/components/base/EmptyState.astro'
+import PhotoView from '~/components/views/PhotoView.astro'
+
+const photos = await getCollection('photos')
+---
+
+{
+  photos.length === 0 ? (
+    <EmptyState
+      title="照片等待冲洗"
+      description="这里会收集旅途、校园和日常生活中值得留下的画面。"
+    />
+  ) : (
+    <PhotoView />
+  )
+}

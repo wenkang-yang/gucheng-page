@@ -3,6 +3,12 @@
   font-size: 1rem;
   line-height: 1.75;
 }
+.prose h1,
+.prose h2,
+.prose h3 {
+  font-family: var(--font-serif);
+  letter-spacing: -0.015em;
+}
 .prose [class~='lead'] {
   color: #4b5563;
   font-size: 1.25em;

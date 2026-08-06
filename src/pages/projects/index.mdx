@@ -1,14 +1,14 @@
 ---
-title: Photos
-subtitle: 旅途、校园与日常生活里值得留下的画面
-description: 孤城的个人摄影与生活片段
+title: Projects
+subtitle: 做过的项目、实验与正在探索的技术方向
+description: 孤城的项目与技术实践
 bgType: false
 ogImage: true
 ---
 
 import BaseLayout from '~/layouts/BaseLayout.astro'
 import StandardLayout from '~/layouts/StandardLayout.astro'
-import PhotosContent from '~/components/views/PhotosContent.astro'
+import GroupView from '~/components/views/GroupView.astro'
 
 <BaseLayout
   title={frontmatter.title}
@@ -17,10 +17,11 @@ import PhotosContent from '~/components/views/PhotosContent.astro'
   ogImage={frontmatter.ogImage}
 >
   <StandardLayout
+    class="max-w-300 group/content"
     title={frontmatter.title}
     subtitle={frontmatter.subtitle}
     isCentered={true}
   >
-    <PhotosContent />
+    <GroupView collectionType="projects" pageToc={true} />
   </StandardLayout>
 </BaseLayout>

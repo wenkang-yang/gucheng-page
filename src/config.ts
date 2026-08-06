@@ -1,7 +1,7 @@
 import type { Site, Ui, Features } from './types'
 
 export const SITE: Site = {
-  website: 'http://localhost:4321/',
+  website: 'https://gucheng.page/',
   base: '/',
   title: '孤城',
   description:
@@ -9,17 +9,11 @@ export const SITE: Site = {
   author: '孤城',
   lang: 'zh-CN',
   ogLocale: 'zh_CN',
-  imageDomains: ['cdn.bsky.app', 'images.unsplash.com'],
+  imageDomains: [],
 }
 
 export const UI: Ui = {
   internalNavs: [
-    {
-      path: '/blog',
-      title: 'Blog',
-      displayMode: 'alwaysText',
-      text: 'Blog',
-    },
     {
       path: '/projects',
       title: 'Projects',
@@ -27,11 +21,16 @@ export const UI: Ui = {
       text: 'Projects',
     },
     {
-      path: '/highlights',
-      title: 'Highlights',
-      displayMode: 'iconToTextOnMobile',
-      text: 'Highlights',
-      icon: 'i-ri-screenshot-line',
+      path: '/writing',
+      title: 'Writing',
+      displayMode: 'alwaysText',
+      text: 'Writing',
+    },
+    {
+      path: '/notes',
+      title: 'Notes',
+      displayMode: 'alwaysText',
+      text: 'Notes',
     },
     {
       path: '/photos',
@@ -40,39 +39,13 @@ export const UI: Ui = {
       text: 'Photos',
       icon: 'i-ri-camera-ai-line',
     },
-    {
-      path: '/shorts',
-      title: 'Shorts',
-      displayMode: 'iconToTextOnMobile',
-      text: 'Shorts',
-      icon: 'i-meteor-icons-grid',
-    },
-    {
-      path: '/changelog',
-      title: 'Changelog',
-      displayMode: 'iconToTextOnMobile',
-      text: 'Changelog',
-      icon: 'i-ri-draft-line',
-    },
   ],
   socialLinks: [
     {
-      link: 'https://github.com/lin-stephanie/astro-antfustyle-theme',
-      title: 'AntfuStyle on Github',
+      link: 'https://github.com/wenkang-yang',
+      title: '孤城 on GitHub',
       displayMode: 'alwaysIcon',
       icon: 'i-uil-github-alt',
-    },
-    {
-      link: 'https://x.com/astrodotbuild',
-      title: 'Astro on Twitter',
-      displayMode: 'alwaysIcon',
-      icon: 'i-ri-twitter-x-fill',
-    },
-    {
-      link: 'https://bsky.app/profile/astro.build',
-      title: 'Astro on Bluesky',
-      displayMode: 'alwaysIcon',
-      icon: 'i-meteor-icons-bluesky',
     },
   ],
   navBarLayout: {
@@ -88,11 +61,7 @@ export const UI: Ui = {
     ],
     mergeOnMobile: true,
   },
-  tabbedLayoutTabs: [
-    { title: 'Changelog', path: '/changelog' },
-    { title: 'AstroBlog', path: '/feeds' },
-    { title: 'AstroStreams', path: '/streams' },
-  ],
+  tabbedLayoutTabs: false,
   postView: {
     postMetaStyle: 'minimal',
     useCoverAltAsCaption: true,
@@ -102,21 +71,9 @@ export const UI: Ui = {
     showGroupItemColorOnHover: true,
   },
   githubView: {
-    monorepos: [
-      'withastro/astro',
-      'withastro/starlight',
-      'lin-stephanie/astro-loaders',
-    ],
-    mainLogoOverrides: [
-      [/starlight/, 'https://starlight.astro.build/favicon.svg'],
-    ],
-    subLogoMatches: [
-      [/theme/, 'i-unjs-theme-colors'],
-      [/github/, 'https://github.githubassets.com/favicons/favicon.svg'],
-      [/tweet/, 'i-prime-twitter'],
-      [/ins/, 'i-skill-icons-instagram'],
-      [/bluesky/, 'i-logos-bluesky'],
-    ],
+    monorepos: [],
+    mainLogoOverrides: [],
+    subLogoMatches: [],
   },
   externalLink: {
     newTab: false,
@@ -139,9 +96,8 @@ export const FEATURES: Features = {
       fallbackTitle: `${SITE.description}`,
       fallbackBgType: 'plum',
       collections: [
-        { collection: 'blog', pathnamePrefix: '/blog' },
-        { collection: 'changelog', pathnamePrefix: '/changelog' },
-        { collection: 'shorts', pathnamePrefix: '/shorts' },
+        { collection: 'writing', pathnamePrefix: '/writing' },
+        { collection: 'notes', pathnamePrefix: '/notes' },
       ],
     },
   ],
@@ -154,39 +110,12 @@ export const FEATURES: Features = {
       displayMode: 'content',
     },
   ],
-  share: [
-    true,
-    {
-      twitter: [true, '@ste7lin'],
-      bluesky: [true, '@ste7lin.bsky.social'],
-      mastodon: false,
-      facebook: false,
-      pinterest: false,
-      reddit: false,
-      telegram: false,
-      whatsapp: false,
-      email: false,
-    },
-  ],
-  giscus: [
-    true,
-    {
-      'data-repo': 'lin-stephanie/astro-antfustyle-theme',
-      'data-repo-id': 'R_kgDOLylKbA',
-      'data-category': 'Giscus',
-      'data-category-id': 'DIC_kwDOLylKbM4Cpugn',
-      'data-mapping': 'title',
-      'data-strict': '0',
-      'data-reactions-enabled': '1',
-      'data-emit-metadata': '0',
-      'data-input-position': 'bottom',
-      'data-lang': 'en',
-    },
-  ],
+  share: false,
+  giscus: false,
   search: [
     true,
     {
-      includes: ['blog', 'shorts', 'changelog'],
+      includes: ['writing', 'notes'],
       filter: true,
       navHighlight: true,
       batchLoadSize: [true, 5],
