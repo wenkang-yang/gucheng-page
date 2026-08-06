@@ -14,16 +14,16 @@ interface Props {
 }
 
 const {
-  gap = 16,
-  minPhotoWidth = 240,
-  maxPhotoWidth = 1000,
+  gap = 24,
+  minPhotoWidth = 280,
+  maxPhotoWidth = 360,
   batchSize = 15,
-  layout = 'masonry',
+  layout = 'square',
   masonryStrategy = 'sequential',
 } = Astro.props as Props
 ---
 
-<div class="mx-20 lt-lgp:mx-10 lt-md:mx-1">
+<div class="photo-gallery-shell">
   <photo-view
     data-hash={hash}
     data-gap={gap}
@@ -40,7 +40,8 @@ const {
         flex items-center justify-center w-10 h-10 rounded-full
         op-30 op-transition lt-lgp:(op-50! bg-#8883 dark:bg-#8886)
         hover:(op-100! bg-#8883) print:hidden"
-      title="Layout toggle"
+      title="切换照片布局"
+      aria-label="切换照片布局"
     >
       <div u-i-ri-layout-masonry-line class="icon-masonry hidden"></div>
       <div u-i-ri-layout-grid-2-line class="icon-grid hidden"></div>
@@ -59,17 +60,20 @@ const {
   import type { PhotoItem } from '~/pages/photos/photos.[hash].json'
 
   class PhotoView extends HTMLElement {
+    #storageKey = 'photo-layout-v2'
     #initialized = false
     #isMasonry = this.dataset.layout === 'masonry'
     #masonryStrategy = this.dataset.masonryStrategy || 'sequential'
 
-    #gap = parseInt(this.dataset.gap || '16', 10)
-    #minPhotoWidth = parseInt(this.dataset.minPhotoWidth || '240', 10)
-    #maxPhotoWidth = parseInt(this.dataset.maxPhotoWidth || '1000', 10)
+    #gap = parseInt(this.dataset.gap || '24', 10)
+    #minPhotoWidth = parseInt(this.dataset.minPhotoWidth || '280', 10)
+    #maxPhotoWidth = parseInt(this.dataset.maxPhotoWidth || '360', 10)
     #batchSize = parseInt(this.dataset.batchSize || '15', 10)
+    #captionHeight = 56
 
     #columns = 0
     #colWidth = 0
+    #masonryOffset = 0
     #containerWidth = 0
     #colHeights: number[] = []
 
@@ -106,6 +110,7 @@ const {
       this.#resizeObserver.observe(this)
 
       this.#button = this.querySelector('.photo-layout-toggle')
+      this.#updateToggleLabel()
       this.#button?.addEventListener('click', this.#handleClickToggle)
 
       this.#container?.addEventListener('keydown', this.#handleKeyOpen)
@@ -144,12 +149,13 @@ const {
     }
 
     #getLayout = () => {
-      if (localStorage.getItem('photo-layout')) {
-        this.#isMasonry = localStorage.getItem('photo-layout') === 'masonry'
+      const savedLayout = localStorage.getItem(this.#storageKey)
+      if (savedLayout === 'masonry' || savedLayout === 'square') {
+        this.#isMasonry = savedLayout === 'masonry'
       } else {
         this.#isMasonry = this.dataset.layout === 'masonry'
         localStorage.setItem(
-          'photo-layout',
+          this.#storageKey,
           this.#isMasonry ? 'masonry' : 'square'
         )
       }
@@ -172,7 +178,9 @@ const {
     #getMasonryParams = () => {
       this.#containerWidth = this.offsetWidth
 
-      this.#columns = Math.floor(this.#containerWidth / this.#minPhotoWidth)
+      this.#columns = Math.floor(
+        (this.#containerWidth + this.#gap) / (this.#minPhotoWidth + this.#gap)
+      )
       this.#columns = Math.max(
         1,
         Math.min(this.#columns, this.#allItems.length)
@@ -181,6 +189,8 @@ const {
       const totalGap = this.#gap * (this.#columns - 1)
       this.#colWidth = (this.#containerWidth - totalGap) / this.#columns
       this.#colWidth = Math.min(this.#colWidth, this.#maxPhotoWidth)
+      const usedWidth = this.#colWidth * this.#columns + totalGap
+      this.#masonryOffset = Math.max(0, (this.#containerWidth - usedWidth) / 2)
       this.#container?.style.setProperty('--photo-width', `${this.#colWidth}px`)
 
       this.#colHeights = new Array(this.#columns).fill(0)
@@ -194,7 +204,7 @@ const {
           ? idx % this.#columns
           : this.#colHeights.indexOf(Math.min(...this.#colHeights))
       const top = this.#colHeights[col]
-      const left = col * (this.#colWidth + this.#gap)
+      const left = this.#masonryOffset + col * (this.#colWidth + this.#gap)
       return { col, left, top }
     }
 
@@ -213,24 +223,35 @@ const {
       let idx = startIndex
       for (const item of items) {
         const aspect = item.aspectRatio
-        const height = this.#colWidth / aspect
+        const imageHeight = this.#colWidth / aspect
+        const captionHeight = item.desc ? this.#captionHeight : 0
+        const height = imageHeight + captionHeight
         const { col, left, top } = this.#calcMasonryTranslate(idx)
 
         const fig = document.createElement('figure')
-        fig.className = 'photo-figure'
+        fig.className = item.desc ? 'photo-figure has-caption' : 'photo-figure'
         fig.dataset.aspectRatio = aspect.toString()
         fig.setAttribute('role', 'button')
         fig.setAttribute('tabindex', '0')
-        fig.setAttribute('aria-label', 'Open viewer')
+        fig.setAttribute(
+          'aria-label',
+          item.desc ? `查看大图：${item.desc}` : '查看大图'
+        )
         fig.style.setProperty('--photo-top', top.toString() + 'px')
         fig.style.setProperty('--photo-left', left.toString() + 'px')
         fig.style.setProperty('--photo-height', `${height}px`)
+        fig.style.setProperty('--photo-image-height', `${imageHeight}px`)
         fig.style.setProperty('--photo-placeholder', `url(${item.placeholder})`)
+
+        const frame = document.createElement('div')
+        frame.className = 'photo-frame'
 
         const img = document.createElement('img')
         img.src = item.thumbnail
         img.alt = item.desc
         img.dataset.origin = item.src
+        img.loading = 'lazy'
+        img.decoding = 'async'
         img.addEventListener(
           'load',
           function (this: HTMLImageElement) {
@@ -238,7 +259,8 @@ const {
           },
           { once: true }
         )
-        fig.appendChild(img)
+        frame.appendChild(img)
+        fig.appendChild(frame)
 
         if (item.desc) {
           const figcaption = document.createElement('figcaption')
@@ -247,7 +269,7 @@ const {
           fig.appendChild(figcaption)
         }
 
-        this.#colHeights[col] += this.#colWidth / aspect + this.#gap
+        this.#colHeights[col] += height + this.#gap
         fragment.appendChild(fig)
         idx++
       }
@@ -261,6 +283,10 @@ const {
       this.#container?.style.setProperty(
         '--min-photo-width',
         `${this.#minPhotoWidth}px`
+      )
+      this.#container?.style.setProperty(
+        '--max-photo-width',
+        `${this.#maxPhotoWidth}px`
       )
       this.#container?.style.setProperty('--photo-gap', `${this.#gap}px`)
     }
@@ -279,16 +305,24 @@ const {
       const fragment = document.createDocumentFragment()
       for (const item of items) {
         const fig = document.createElement('figure')
-        fig.className = 'photo-figure'
+        fig.className = item.desc ? 'photo-figure has-caption' : 'photo-figure'
         fig.setAttribute('role', 'button')
         fig.setAttribute('tabindex', '0')
-        fig.setAttribute('aria-label', 'Open viewer')
+        fig.setAttribute(
+          'aria-label',
+          item.desc ? `查看大图：${item.desc}` : '查看大图'
+        )
         fig.style.setProperty('--photo-placeholder', `url(${item.placeholder})`)
+
+        const frame = document.createElement('div')
+        frame.className = 'photo-frame'
 
         const img = document.createElement('img')
         img.src = item.thumbnail
         img.alt = item.desc
         img.dataset.origin = item.src
+        img.loading = 'lazy'
+        img.decoding = 'async'
         img.addEventListener(
           'load',
           function (this: HTMLImageElement) {
@@ -296,7 +330,8 @@ const {
           },
           { once: true }
         )
-        fig.appendChild(img)
+        frame.appendChild(img)
+        fig.appendChild(frame)
 
         if (item.desc) {
           const figcaption = document.createElement('figcaption')
@@ -323,12 +358,17 @@ const {
         const fig = figs[idx]
         const { col, left, top } = this.#calcMasonryTranslate(idx)
         const ratio = parseFloat(fig.dataset.aspectRatio!)
+        const imageHeight = this.#colWidth / ratio
+        const height =
+          imageHeight +
+          (fig.classList.contains('has-caption') ? this.#captionHeight : 0)
 
         fig.style.setProperty('--photo-left', left.toString() + 'px')
         fig.style.setProperty('--photo-top', top.toString() + 'px')
-        fig.style.setProperty('--photo-height', `${this.#colWidth / ratio}px`)
+        fig.style.setProperty('--photo-height', `${height}px`)
+        fig.style.setProperty('--photo-image-height', `${imageHeight}px`)
 
-        this.#colHeights[col] += this.#colWidth / ratio + this.#gap
+        this.#colHeights[col] += height + this.#gap
       }
 
       this.style.height = `${Math.max(...this.#colHeights)}px`
@@ -383,11 +423,19 @@ const {
       this.#allLoaded = false
 
       this.#buildLayout()
+      this.#updateToggleLabel()
 
       window.localStorage.setItem(
-        'photo-layout',
+        this.#storageKey,
         this.#isMasonry ? 'masonry' : 'square'
       )
+    }
+
+    #updateToggleLabel = () => {
+      if (!this.#button) return
+      const label = this.#isMasonry ? '切换为整齐网格' : '切换为原始比例瀑布流'
+      this.#button.title = label
+      this.#button.setAttribute('aria-label', label)
     }
 
     // event delegation: open viewer when focus is on a figure and presses Enter
@@ -408,6 +456,13 @@ const {
 </script>
 
 <style is:global>
+  .photo-gallery-shell {
+    width: 100%;
+    max-width: 70rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
   .photo-view[data-layout='masonry'] .icon-masonry {
     display: block;
   }
@@ -419,17 +474,26 @@ const {
   .photo-view[data-layout='square'] .photo-container {
     display: grid;
     grid-template-columns: repeat(
-      auto-fill,
-      minmax(var(--min-photo-width), 1fr)
+      auto-fit,
+      minmax(var(--min-photo-width), var(--max-photo-width))
     );
     gap: var(--photo-gap);
+    justify-content: center;
+    align-items: start;
   }
 
   .photo-figure {
     cursor: pointer;
-    overflow: hidden;
+    min-width: 0;
+    margin: 0;
+    outline: none;
+  }
 
+  .photo-frame {
+    overflow: hidden;
+    border-radius: 0.5rem;
     background-size: cover;
+    background-position: center;
     background-image: var(--photo-placeholder);
   }
 
@@ -440,17 +504,20 @@ const {
 
     width: var(--photo-width);
     height: var(--photo-height);
-    border-radius: 0.375rem;
 
     transform: translate(var(--photo-left), var(--photo-top));
   }
 
-  .photo-view[data-layout='square'] .photo-figure {
-    position: relative;
-    aspect-ratio: 1;
+  .photo-view[data-layout='masonry'] .photo-frame {
+    height: var(--photo-image-height);
   }
 
-  .photo-figure img {
+  .photo-view[data-layout='square'] .photo-frame {
+    aspect-ratio: 4 / 3;
+  }
+
+  .photo-frame img {
+    display: block;
     width: 100%;
     height: 100%;
 
@@ -459,30 +526,39 @@ const {
     transition: all 0.3s ease-in-out;
   }
 
-  .photo-figure:hover img,
-  .photo-figure:focus img {
+  .photo-figure:hover .photo-frame img,
+  .photo-figure:focus-visible .photo-frame img {
     transform: scale(1.05);
   }
 
   .photo-figure figcaption {
-    position: absolute;
-    bottom: 0;
-    left: 0;
+    display: -webkit-box;
+    box-sizing: border-box;
+    height: 3.5rem;
+    padding: 0.7rem 0.2rem 0;
+    overflow: hidden;
 
-    width: 100%;
-    padding: 1rem 0.6rem 0.6rem;
-
-    color: white;
     font-size: 0.875rem;
+    line-height: 1.5;
+    color: currentColor;
+    opacity: 0.62;
 
-    opacity: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
-
-    transition: all 0.3s ease-in-out;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
-  .photo-figure:hover figcaption,
-  .photo-figure:focus figcaption {
-    opacity: 1;
+  .photo-figure:focus-visible .photo-frame {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 31rem) {
+    .photo-gallery-shell {
+      padding-inline: 0.75rem;
+    }
+
+    .photo-view[data-layout='square'] .photo-container {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 </style>
