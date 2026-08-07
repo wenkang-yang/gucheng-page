@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "advanced-mathematics-biomed-agri-volume-2",
+    "title": "高等数学（生化医农类）（修订版）下册",
+    "creator": "张锦炎、周建莹",
+    "kind": "textbook",
+    "year": 2002,
+    "description": "高等学校数学基础课教材，北京大学出版社修订版。",
+    "file": "/library/advanced-mathematics-biomed-agri-volume-2.pdf",
+    "tags": ["高等数学", "微积分", "教材"]
+  }
+]
