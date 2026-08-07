@@ -750,10 +750,12 @@ interface GiscusConfig {
 
 interface SearchConfig {
   /**
-   * Specify which content collections rendered by `RenderPost.astro` are indexed.
+   * Specify which content categories are indexed by Pagefind.
    *
    * - By default, only `blog` and `changelog` are indexed, as their dynamic routes
    * (`/blog/[...slug]` and `/changelog/[slug]`) use `RenderPost.astro`.
+   * - Pages outside `RenderPost.astro` can opt in through the search attributes
+   *   exposed by `StandardLayout.astro`.
    * - If needed, see https://pagefind.app/ for adjusting the search implementation.
    */
   includes: string[]

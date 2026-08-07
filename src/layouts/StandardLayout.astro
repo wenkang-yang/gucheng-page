@@ -43,7 +43,13 @@ const {
 }
 {
   Astro.slots.has('default') && (
-    <div class:list={['mx-auto', className]}>
+    <div
+      class:list={['mx-auto', className]}
+      data-pagefind-body={isSearchable ? '' : undefined}
+      data-pagefind-filter={
+        isSearchable && searchFilter ? searchFilter : undefined
+      }
+    >
       <slot />
     </div>
   )

@@ -30,6 +30,11 @@ const sections = [
     title: 'Photos',
     description: '旅途、校园与日常画面',
   },
+  {
+    href: '/library',
+    title: 'Library',
+    description: '藏卷 · 读过的书、教材与论文',
+  },
 ]
 ---
 
@@ -46,7 +51,13 @@ const sections = [
   <nav class="section-grid" aria-label="主要栏目">
     {
       sections.map((section) => (
-        <a class="section-card" href={withBasePath(section.href)}>
+        <a
+          class:list={[
+            'section-card',
+            { 'section-card--wide': section.href === '/library' },
+          ]}
+          href={withBasePath(section.href)}
+        >
           <span>
             <strong>{section.title}</strong>
             <small>{section.description}</small>
@@ -133,6 +144,10 @@ const sections = [
       background-color 180ms ease;
   }
 
+  .section-card--wide {
+    grid-column: 1 / -1;
+  }
+
   .section-card:hover,
   .section-card:focus-visible {
     border-color: rgb(127 127 127 / 0.38);
@@ -199,6 +214,10 @@ const sections = [
   @media (max-width: 34rem) {
     .section-grid {
       grid-template-columns: 1fr;
+    }
+
+    .section-card--wide {
+      grid-column: auto;
     }
   }
 </style>

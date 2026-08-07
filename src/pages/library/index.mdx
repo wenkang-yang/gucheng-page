@@ -1,0 +1,34 @@
+---
+title: Library
+subtitle: 藏卷 · 读过的书、教材与论文
+description: 孤城读过的书籍、教材与论文收藏
+bgType: false
+ogImage: true
+---
+
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import StandardLayout from '~/layouts/StandardLayout.astro'
+import LibraryView from '~/components/views/LibraryView.astro'
+import { FEATURES } from '~/config'
+
+<BaseLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  bgType={frontmatter.bgType}
+  ogImage={frontmatter.ogImage}
+>
+  <StandardLayout
+    class="max-w-260"
+    title={frontmatter.title}
+    subtitle={frontmatter.subtitle}
+    isCentered={true}
+    isSearchable={
+      Array.isArray(FEATURES.search) &&
+      FEATURES.search[0] &&
+      FEATURES.search[1].includes.includes('library')
+    }
+    searchFilter="collection:library"
+  >
+    <LibraryView />
+  </StandardLayout>
+</BaseLayout>

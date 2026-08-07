@@ -199,3 +199,53 @@ export const photoSchema = z.object({
       'Optional description for the image. If not needed, leave the field as an empty string or delete it.'
     ),
 })
+
+/* Library */
+export const librarySchema = z.object({
+  id: z
+    .string()
+    .trim()
+    .min(1)
+    .describe('**Required**. A unique, URL-safe identifier for the item.'),
+  title: z
+    .string()
+    .trim()
+    .min(1)
+    .describe('**Required**. The title of the book, textbook, or paper.'),
+  creator: z
+    .string()
+    .trim()
+    .default('')
+    .describe('Author, editor, or organization responsible for the work.'),
+  kind: z
+    .enum(['book', 'textbook', 'paper'])
+    .describe('**Required**. The type of reading material.'),
+  year: z
+    .union([z.number().int(), z.string().trim()])
+    .default('')
+    .describe('Publication year or edition information.'),
+  description: z
+    .string()
+    .trim()
+    .default('')
+    .describe('A short personal note or description.'),
+  file: z
+    .string()
+    .trim()
+    .default('')
+    .describe(
+      'Path to an uploaded PDF, normally under `/library/`, or an authorized external PDF URL.'
+    ),
+  sourceUrl: z
+    .union([z.url(), z.literal('')])
+    .default('')
+    .describe('Optional official source, publisher, or landing-page URL.'),
+  readDate: z
+    .union([z.coerce.date(), z.literal('')])
+    .optional()
+    .describe('Optional date when the item was finished.'),
+  tags: z
+    .array(z.string().trim().min(1))
+    .default([])
+    .describe('Optional subjects or topics used to describe the item.'),
+})

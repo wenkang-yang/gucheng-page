@@ -1,0 +1,254 @@
+---
+import { getCollection } from 'astro:content'
+
+import EmptyState from '~/components/base/EmptyState.astro'
+import Link from '~/components/base/Link.astro'
+import Tag from '~/components/tags/Tag.astro'
+import { formatDate } from '~/utils/datetime'
+import { withBasePath } from '~/utils/path'
+
+const KIND_ORDER = ['book', 'textbook', 'paper'] as const
+const KIND_META = {
+  book: { label: '书籍', icon: 'i-ri-book-open-line' },
+  textbook: { label: '教材', icon: 'i-ri-graduation-cap-line' },
+  paper: { label: '论文', icon: 'i-ri-file-paper-2-line' },
+} as const
+
+const entries = await getCollection('library')
+const groups = KIND_ORDER.map((kind) => ({
+  kind,
+  ...KIND_META[kind],
+  items: entries
+    .filter((entry) => entry.data.kind === kind)
+    .sort((a, b) => a.data.title.localeCompare(b.data.title, 'zh-CN')),
+})).filter((group) => group.items.length > 0)
+
+const resolveFile = (file: string) =>
+  file && !/^https?:\/\//.test(file) ? withBasePath(file) : file
+---
+
+{
+  entries.length === 0 ? (
+    <EmptyState
+      title="藏卷尚待充盈"
+      description="这里会收录读过的书籍、教材与论文，并在获得授权时提供电子版入口。"
+    />
+  ) : (
+    <div class="library-groups" aria-label="藏卷列表">
+      {groups.map((group) => (
+        <section
+          class="library-group"
+          aria-labelledby={`library-${group.kind}`}
+        >
+          <header class="group-heading">
+            <span class={group.icon} aria-hidden="true" />
+            <h2 id={`library-${group.kind}`}>{group.label}</h2>
+            <span class="group-count">{group.items.length}</span>
+          </header>
+
+          <div class="library-grid">
+            {group.items.map(({ data }) => {
+              const metadata = [data.creator, data.year]
+                .filter((value) => value !== '')
+                .join(' · ')
+              const file = resolveFile(data.file)
+
+              return (
+                <article class="library-card">
+                  <div class="card-main">
+                    <h3>{data.title}</h3>
+                    {metadata && <p class="metadata">{metadata}</p>}
+                    {data.description && (
+                      <p class="description">{data.description}</p>
+                    )}
+                  </div>
+
+                  {data.tags.length > 0 && (
+                    <div class="tags" aria-label="主题标签">
+                      {data.tags.map((tag) => (
+                        <Tag {tag} />
+                      ))}
+                    </div>
+                  )}
+
+                  <footer>
+                    <div class="read-date">
+                      {data.readDate instanceof Date && (
+                        <>读完于 {formatDate(data.readDate)}</>
+                      )}
+                    </div>
+                    <div class="actions">
+                      {data.sourceUrl && (
+                        <Link href={data.sourceUrl} external={true}>
+                          来源
+                        </Link>
+                      )}
+                      {file && (
+                        <Link href={file} external={true}>
+                          <span
+                            class="i-ri-file-pdf-2-line"
+                            aria-hidden="true"
+                          />
+                          打开 PDF
+                        </Link>
+                      )}
+                    </div>
+                  </footer>
+                </article>
+              )
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .library-groups {
+    display: grid;
+    gap: 3rem;
+  }
+
+  .library-group {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .group-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  }
+
+  .group-heading > span:first-child {
+    color: color-mix(in srgb, currentColor 65%, transparent);
+    font-size: 1.2rem;
+  }
+
+  .group-heading h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    letter-spacing: 0.08em;
+  }
+
+  .group-count {
+    min-width: 1.6rem;
+    margin-left: auto;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, currentColor 8%, transparent);
+    font-size: 0.75rem;
+    text-align: center;
+    opacity: 0.55;
+  }
+
+  .library-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: 1rem;
+  }
+
+  .library-card {
+    display: flex;
+    min-height: 13rem;
+    flex-direction: column;
+    padding: 1.25rem;
+    border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--c-bg) 94%, currentColor 6%);
+    transition:
+      transform 200ms ease,
+      border-color 200ms ease,
+      box-shadow 200ms ease;
+  }
+
+  .library-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, currentColor 36%, transparent);
+    box-shadow: 0 0.5rem 1.5rem -1.1rem currentColor;
+  }
+
+  .card-main {
+    flex: 1;
+  }
+
+  .library-card h3 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.08rem;
+    line-height: 1.55;
+  }
+
+  .metadata,
+  .description {
+    margin: 0.55rem 0 0;
+    line-height: 1.65;
+  }
+
+  .metadata {
+    font-size: 0.82rem;
+    opacity: 0.52;
+  }
+
+  .description {
+    font-size: 0.9rem;
+    opacity: 0.7;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 0.65rem;
+    margin-top: 1rem;
+    font-size: 0.78rem;
+    opacity: 0.65;
+  }
+
+  footer {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+    font-size: 0.82rem;
+  }
+
+  .read-date {
+    opacity: 0.45;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  .actions :global(a) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  @media (max-width: 480px) {
+    .library-card {
+      min-height: 0;
+    }
+
+    footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .actions {
+      margin-left: 0;
+    }
+  }
+</style>

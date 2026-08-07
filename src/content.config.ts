@@ -1,7 +1,13 @@
 import { glob, file } from 'astro/loaders'
 import { defineCollection } from 'astro:content'
 
-import { pageSchema, postSchema, projectSchema, photoSchema } from '~/schema'
+import {
+  pageSchema,
+  postSchema,
+  projectSchema,
+  photoSchema,
+  librarySchema,
+} from '~/schema'
 
 const pages = defineCollection({
   loader: glob({ base: './src/pages', pattern: '**/*.mdx' }),
@@ -35,6 +41,11 @@ const notes = defineCollection({
   schema: postSchema,
 })
 
+const library = defineCollection({
+  loader: file('./src/content/library/data.json'),
+  schema: librarySchema,
+})
+
 export const collections = {
   pages,
   home,
@@ -42,4 +53,5 @@ export const collections = {
   projects,
   photos,
   notes,
+  library,
 }

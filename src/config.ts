@@ -17,20 +17,23 @@ export const UI: Ui = {
     {
       path: '/projects',
       title: 'Projects',
-      displayMode: 'alwaysText',
+      displayMode: 'iconToTextOnMobile',
       text: 'Projects',
+      icon: 'i-ri-code-box-line',
     },
     {
       path: '/writing',
       title: 'Writing',
-      displayMode: 'alwaysText',
+      displayMode: 'iconToTextOnMobile',
       text: 'Writing',
+      icon: 'i-ri-quill-pen-line',
     },
     {
       path: '/notes',
       title: 'Notes',
-      displayMode: 'alwaysText',
+      displayMode: 'iconToTextOnMobile',
       text: 'Notes',
+      icon: 'i-ri-sticky-note-line',
     },
     {
       path: '/photos',
@@ -38,6 +41,13 @@ export const UI: Ui = {
       displayMode: 'iconToTextOnMobile',
       text: 'Photos',
       icon: 'i-ri-camera-ai-line',
+    },
+    {
+      path: '/library',
+      title: 'Library',
+      displayMode: 'iconToTextOnMobile',
+      text: 'Library',
+      icon: 'i-ri-book-shelf-line',
     },
   ],
   socialLinks: [
@@ -115,7 +125,7 @@ export const FEATURES: Features = {
   search: [
     true,
     {
-      includes: ['writing', 'notes'],
+      includes: ['writing', 'notes', 'library'],
       filter: true,
       navHighlight: true,
       batchLoadSize: [true, 5],
